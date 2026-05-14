@@ -7,16 +7,27 @@ function Dashboard({ features, token }) {
 
   useEffect(() => {
     const headers = { Authorization: `Bearer ${token}` };
+    // Handle both legacy (array) and paginated ({data,pagination}) response shapes.
+    const toRows = (resp) => {
+      if (!resp) return [];
+      if (Array.isArray(resp)) return resp;
+      if (Array.isArray(resp.data)) return resp.data;
+      return [];
+    };
     Promise.all([
-      fetch('http://localhost:3001/api/incidents', { headers }).then(r => r.json()).catch(() => []),
-      fetch('http://localhost:3001/api/deployments', { headers }).then(r => r.json()).catch(() => []),
-      fetch('http://localhost:3001/api/monitoring', { headers }).then(r => r.json()).catch(() => []),
-      fetch('http://localhost:3001/api/cost-optimization', { headers }).then(r => r.json()).catch(() => []),
+      fetch('http://localhost:3001/api/incidents?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
+      fetch('http://localhost:3001/api/deployments?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
+      fetch('http://localhost:3001/api/monitoring?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
+      fetch('http://localhost:3001/api/cost-optimization?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
     ]).then(([incidents, deployments, alerts, costs]) => {
-      const activeIncidents = Array.isArray(incidents) ? incidents.filter(i => i.status !== 'resolved').length : 0;
-      const activePipelines = Array.isArray(deployments) ? deployments.filter(d => d.status === 'active').length : 0;
-      const activeAlerts = Array.isArray(alerts) ? alerts.filter(a => a.status === 'active').length : 0;
-      const totalSavings = Array.isArray(costs) ? costs.reduce((sum, c) => sum + parseFloat(c.potential_savings || 0), 0) : 0;
+      const inc = toRows(incidents);
+      const dep = toRows(deployments);
+      const alr = toRows(alerts);
+      const cst = toRows(costs);
+      const activeIncidents = inc.filter(i => i.status !== 'resolved').length;
+      const activePipelines = dep.filter(d => d.status === 'active').length;
+      const activeAlerts = alr.filter(a => a.status === 'active').length;
+      const totalSavings = cst.reduce((sum, c) => sum + parseFloat(c.potential_savings || 0), 0);
       setStats({ incidents: activeIncidents, deployments: activePipelines, alerts: activeAlerts, savings: totalSavings });
     });
   }, [token]);

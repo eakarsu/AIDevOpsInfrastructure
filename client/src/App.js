@@ -4,8 +4,23 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import FeaturePage from './pages/FeaturePage';
 import CICDAgentsPage from './pages/CICDAgentsPage';
+import AINewToolsPage from './pages/AINewToolsPage';
 import Navbar from './components/Navbar';
 import './App.css';
+
+// // === Batch 02 Gaps & Frontend Mounts ===
+import CfPredictiveInfrastructureScaling from './pages/CfPredictiveInfrastructureScaling';
+import CfAnomalyDetection from './pages/CfAnomalyDetection';
+import CfCostOptimizationAutomation from './pages/CfCostOptimizationAutomation';
+import CfFailurePrediction from './pages/CfFailurePrediction';
+import CfSecurityPostureAutomation from './pages/CfSecurityPostureAutomation';
+import GapMissingOptimizeInfrastructurePredictPerformanceDetectA from './pages/GapMissingOptimizeInfrastructurePredictPerformanceDetectA';
+import GapLimitedCloudPlatformIntegrationNoAwsGcpAzureSdkAdap from './pages/GapLimitedCloudPlatformIntegrationNoAwsGcpAzureSdkAdap';
+import GapLimitedRealTimeAlertingAndIncidentResponseAutomation from './pages/GapLimitedRealTimeAlertingAndIncidentResponseAutomation';
+import GapNoSlaTrackingModule from './pages/GapNoSlaTrackingModule';
+import GapNoChangeManagementWorkflow from './pages/GapNoChangeManagementWorkflow';
+import GapNoSmsNotifications from './pages/GapNoSmsNotifications';
+import GapNoCalendarIntegration from './pages/GapNoCalendarIntegration';
 
 const FEATURES = [
   { key: 'auto-scaling', label: 'Auto-Scaling', icon: '📈', color: '#3FB950', apiPath: '/api/auto-scaling', description: 'AI-powered auto-scaling policies and resource management' },
@@ -19,6 +34,7 @@ const FEATURES = [
   { key: 'iac', label: 'Infrastructure as Code', icon: '🏗️', color: '#79C0FF', apiPath: '/api/iac', description: 'Terraform/IaC management, drift detection, best practices' },
   { key: 'disaster-recovery', label: 'Disaster Recovery', icon: '🔄', color: '#F85149', apiPath: '/api/disaster-recovery', description: 'DR planning, backup management, and failover automation' },
   { key: 'cicd-agents', label: 'CI/CD Agents', icon: '🤖', color: '#E94560', apiPath: '/api/cicd-agents', description: 'AI agents for failure analysis, pipeline optimization, security scanning' },
+  { key: 'ai-new-tools', label: 'AI New Tools', icon: '✨', color: '#E94560', apiPath: '/api/ai', description: 'Stateless scaling and security risk advisors' },
 ];
 
 const FEATURE_FIELDS = {
@@ -179,14 +195,29 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Dashboard features={FEATURES} token={token} />} />
-            {FEATURES.map(f => (
+            {FEATURES.filter(f => f.key !== 'cicd-agents' && f.key !== 'ai-new-tools').map(f => (
               <Route key={f.key} path={`/${f.key}`} element={
                 <FeaturePage feature={f} fields={FEATURE_FIELDS[f.key]} token={token} />
               } />
             ))}
             <Route path="/cicd-agents" element={<CICDAgentsPage token={token} />} />
+            <Route path="/ai-new-tools" element={<AINewToolsPage token={token} />} />
             <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+          
+        {/* // === Batch 02 Gaps & Frontend Mounts === */}
+        <Route path="/cf/predictive-infrastructure-scaling" element={<CfPredictiveInfrastructureScaling />} />
+        <Route path="/cf/anomaly-detection" element={<CfAnomalyDetection />} />
+        <Route path="/cf/cost-optimization-automation" element={<CfCostOptimizationAutomation />} />
+        <Route path="/cf/failure-prediction" element={<CfFailurePrediction />} />
+        <Route path="/cf/security-posture-automation" element={<CfSecurityPostureAutomation />} />
+        <Route path="/gap/missing-optimize-infrastructure-predict-performance-detect-a" element={<GapMissingOptimizeInfrastructurePredictPerformanceDetectA />} />
+        <Route path="/gap/limited-cloud-platform-integration-no-aws-gcp-azure-sdk-adap" element={<GapLimitedCloudPlatformIntegrationNoAwsGcpAzureSdkAdap />} />
+        <Route path="/gap/limited-real-time-alerting-and-incident-response-automation" element={<GapLimitedRealTimeAlertingAndIncidentResponseAutomation />} />
+        <Route path="/gap/no-sla-tracking-module" element={<GapNoSlaTrackingModule />} />
+        <Route path="/gap/no-change-management-workflow" element={<GapNoChangeManagementWorkflow />} />
+        <Route path="/gap/no-sms-notifications" element={<GapNoSmsNotifications />} />
+        <Route path="/gap/no-calendar-integration" element={<GapNoCalendarIntegration />} />
+      </Routes>
         </main>
       </div>
     </Router>

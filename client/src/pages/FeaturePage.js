@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import Pagination from '../components/Pagination';
 
 function FeaturePage({ feature, fields, token }) {
   const [items, setItems] = useState([]);
@@ -11,6 +12,10 @@ function FeaturePage({ feature, fields, token }) {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiOutput, setAiOutput] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [aiHistory, setAiHistory] = useState([]);
 
   const API = `http://localhost:3001${feature.apiPath}`;
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
@@ -18,11 +23,30 @@ function FeaturePage({ feature, fields, token }) {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(API, { headers });
+      const res = await fetch(`${API}?page=${page}&limit=20`, { headers });
       const data = await res.json();
-      setItems(Array.isArray(data) ? data : []);
+      // Paginated response: { data: [], pagination: { page, limit, total, totalPages } }
+      if (data && Array.isArray(data.data)) {
+        setItems(data.data);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setTotal(data.pagination?.total || data.data.length);
+      } else {
+        setItems(Array.isArray(data) ? data : []);
+        setTotalPages(1);
+        setTotal(Array.isArray(data) ? data.length : 0);
+      }
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
+  }, [feature.key, page]);
+
+  // Fetch AI history for selected item
+  const fetchAIHistory = useCallback(async (itemId) => {
+    if (!itemId) return setAiHistory([]);
+    try {
+      const res = await fetch(`http://localhost:3001/api/ai-insights/${feature.key.replace(/-/g, '_')}/${itemId}?page=1&limit=5`, { headers });
+      const data = await res.json();
+      if (data && Array.isArray(data.data)) setAiHistory(data.data);
+    } catch (err) { /* silent */ }
   }, [feature.key]);
 
   useEffect(() => {
@@ -37,6 +61,7 @@ function FeaturePage({ feature, fields, token }) {
     setShowDetail(true);
     setShowForm(false);
     setAiOutput(item.ai_output ? { success: true, result: item.ai_output, model: 'cached' } : null);
+    fetchAIHistory(item.id);
   };
 
   const handleNew = () => {
@@ -196,7 +221,7 @@ function FeaturePage({ feature, fields, token }) {
           <span className="feature-header-icon">{feature.icon}</span>
           <div>
             <h1 className="feature-title">{feature.label}</h1>
-            <div className="feature-count">{items.length} items</div>
+            <div className="feature-count">{total || items.length} items</div>
           </div>
         </div>
         <button className="btn-new" onClick={handleNew}>+ New Item</button>
@@ -236,6 +261,7 @@ function FeaturePage({ feature, fields, token }) {
               ))}
             </tbody>
           </table>
+          <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
 
@@ -290,6 +316,12 @@ function FeaturePage({ feature, fields, token }) {
                   <div className="ai-output-body">
                     <div className="ai-output-content" dangerouslySetInnerHTML={{ __html: formatAiContent(aiOutput.result || aiOutput.error || 'No response') }} />
                   </div>
+                  {aiOutput.parsed && Object.keys(aiOutput.parsed).length > 0 && !aiOutput.parsed.raw_response && (
+                    <details style={{ marginTop: 8, padding: 8, background: '#0D1117', borderRadius: 4 }}>
+                      <summary style={{ cursor: 'pointer', fontSize: 11, color: '#58A6FF', fontWeight: 600 }}>Parsed JSON</summary>
+                      <pre style={{ margin: 0, padding: 8, color: '#C9D1D9', fontSize: 11, overflow: 'auto' }}>{JSON.stringify(aiOutput.parsed, null, 2)}</pre>
+                    </details>
+                  )}
                   {aiOutput.usage && (
                     <div className="ai-output-meta">
                       <span>prompt: {aiOutput.usage.prompt_tokens}</span>
@@ -297,6 +329,18 @@ function FeaturePage({ feature, fields, token }) {
                       <span>id: {aiOutput.id}</span>
                     </div>
                   )}
+                </div>
+              )}
+
+              {aiHistory && aiHistory.length > 0 && (
+                <div style={{ marginTop: 16, padding: 12, background: '#0D1117', borderRadius: 6, border: '1px solid #30363D' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#58A6FF', textTransform: 'uppercase', marginBottom: 8 }}>AI Analysis History ({aiHistory.length})</div>
+                  {aiHistory.map(h => (
+                    <div key={h.id} style={{ padding: '6px 0', borderBottom: '1px solid #30363D', fontSize: 12 }}>
+                      <div style={{ color: '#8B949E' }}>{new Date(h.created_at).toLocaleString()}</div>
+                      <div style={{ color: '#C9D1D9', marginTop: 2 }}>{(h.prompt_summary || '').slice(0, 120)}</div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
