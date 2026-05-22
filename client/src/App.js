@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import FeaturePage from './pages/FeaturePage';
 import CICDAgentsPage from './pages/CICDAgentsPage';
 import AINewToolsPage from './pages/AINewToolsPage';
+import SloErrorBudgetBurn from './pages/SloErrorBudgetBurn';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -21,6 +22,11 @@ import GapNoSlaTrackingModule from './pages/GapNoSlaTrackingModule';
 import GapNoChangeManagementWorkflow from './pages/GapNoChangeManagementWorkflow';
 import GapNoSmsNotifications from './pages/GapNoSmsNotifications';
 import GapNoCalendarIntegration from './pages/GapNoCalendarIntegration';
+
+import CodexCustomVizFeature from './pages/CodexCustomVizFeature';
+import CodexOperationsFeature from './pages/CodexOperationsFeature';
+
+import TimelineView from './pages/TimelineView';
 
 const FEATURES = [
   { key: 'auto-scaling', label: 'Auto-Scaling', icon: '📈', color: '#3FB950', apiPath: '/api/auto-scaling', description: 'AI-powered auto-scaling policies and resource management' },
@@ -194,6 +200,10 @@ function App() {
         <Navbar user={user} onLogout={handleLogout} features={FEATURES} />
         <main className="main-content">
           <Routes>
+        <Route path="/insights/timeline" element={<TimelineView />} />
+        <Route path="/codex/custom-viz" element={<CodexCustomVizFeature />} />
+        <Route path="/codex/operations" element={<CodexOperationsFeature />} />
+
             <Route path="/" element={<Dashboard features={FEATURES} token={token} />} />
             {FEATURES.filter(f => f.key !== 'cicd-agents' && f.key !== 'ai-new-tools').map(f => (
               <Route key={f.key} path={`/${f.key}`} element={
@@ -202,6 +212,7 @@ function App() {
             ))}
             <Route path="/cicd-agents" element={<CICDAgentsPage token={token} />} />
             <Route path="/ai-new-tools" element={<AINewToolsPage token={token} />} />
+            <Route path="/slo-error-budget-burn" element={<SloErrorBudgetBurn token={token} />} />
             <Route path="*" element={<Navigate to="/" />} />
           
         {/* // === Batch 02 Gaps & Frontend Mounts === */}

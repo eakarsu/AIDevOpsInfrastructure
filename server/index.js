@@ -56,6 +56,7 @@ app.use('/api/ai', require('./routes/costOptimize'));
 app.use('/api/ai', require('./routes/anomalyDetect'));
 app.use('/api/ai', require('./routes/scalingPredict'));
 app.use('/api/ai-backlog', require('./routes/aiBacklog'));
+app.use('/api/slo-error-budget-burn', require('./routes/sloErrorBudgetBurn'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

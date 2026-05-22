@@ -16,4 +16,8 @@ function authenticateToken(req, res, next) {
   }
 }
 
-module.exports = { authenticateToken, JWT_SECRET };
+// Export a callable function so `const auth = require('../middleware/auth')` works as middleware,
+// while still supporting destructured `{ authenticateToken, JWT_SECRET }` consumers.
+authenticateToken.authenticateToken = authenticateToken;
+authenticateToken.JWT_SECRET = JWT_SECRET;
+module.exports = authenticateToken;
