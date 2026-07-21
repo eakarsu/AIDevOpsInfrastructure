@@ -6,6 +6,8 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) throw new Error('JWT_SECRET must be configured with at least 32 characters');
+if (!process.env.DATABASE_URL && !process.env.DB_PASSWORD) throw new Error('DATABASE_URL or DB_PASSWORD is required');
 
 // Security middleware
 app.use(helmet({
@@ -57,31 +59,13 @@ app.use('/api/ai', require('./routes/anomalyDetect'));
 app.use('/api/ai', require('./routes/scalingPredict'));
 app.use('/api/ai-backlog', require('./routes/aiBacklog'));
 app.use('/api/slo-error-budget-burn', require('./routes/sloErrorBudgetBurn'));
+app.use('/api/governed-changes', require('./routes/governedChanges'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-missing-optimize-infrastructure-predict-performance-detect-a', require('./routes/gap_missing_optimize_infrastructure_predict_performance_detect_a'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-limited-cloud-platform-integration-no-aws-gcp-azure-sdk-adap', require('./routes/gap_limited_cloud_platform_integration_no_aws_gcp_azure_sdk_adap'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-limited-real-time-alerting-and-incident-response-automation', require('./routes/gap_limited_real_time_alerting_and_incident_response_automation'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-sla-tracking-module', require('./routes/gap_no_sla_tracking_module'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-change-management-workflow', require('./routes/gap_no_change_management_workflow'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-sms-notifications', require('./routes/gap_no_sms_notifications'));
-
-// // === Batch 02 Gaps & Frontend Mounts ===
-app.use('/api/gap-no-calendar-integration', require('./routes/gap_no_calendar_integration'));
+// Generated gap routers are quarantined; no fake cloud action is exposed.
 
 app.listen(PORT, () => {
   console.log(`🚀 AI DevOps Infrastructure Server running on port ${PORT}`);
