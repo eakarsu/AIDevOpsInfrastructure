@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Dashboard({ features, token }) {
+  const apiBase = process.env.REACT_APP_API_BASE || 'http://localhost:3001/api';
   const navigate = useNavigate();
   const [stats, setStats] = useState({ incidents: 0, deployments: 0, alerts: 0, savings: 0 });
 
@@ -15,10 +16,10 @@ function Dashboard({ features, token }) {
       return [];
     };
     Promise.all([
-      fetch('http://localhost:3001/api/incidents?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
-      fetch('http://localhost:3001/api/deployments?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
-      fetch('http://localhost:3001/api/monitoring?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
-      fetch('http://localhost:3001/api/cost-optimization?page=1&limit=100', { headers }).then(r => r.json()).catch(() => []),
+      fetch(`${apiBase}/incidents?page=1&limit=100`, { headers }).then(r => r.json()).catch(() => []),
+      fetch(`${apiBase}/deployments?page=1&limit=100`, { headers }).then(r => r.json()).catch(() => []),
+      fetch(`${apiBase}/monitoring?page=1&limit=100`, { headers }).then(r => r.json()).catch(() => []),
+      fetch(`${apiBase}/cost-optimization?page=1&limit=100`, { headers }).then(r => r.json()).catch(() => []),
     ]).then(([incidents, deployments, alerts, costs]) => {
       const inc = toRows(incidents);
       const dep = toRows(deployments);

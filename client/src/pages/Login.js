@@ -17,7 +17,8 @@ function Login({ onLogin }) {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('http://localhost:3001/api/auth/login', {
+      const apiBase = process.env.REACT_APP_API_BASE || 'http://localhost:3001/api';
+      const res = await fetch(`${apiBase}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

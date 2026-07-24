@@ -17,7 +17,8 @@ function FeaturePage({ feature, fields, token }) {
   const [total, setTotal] = useState(0);
   const [aiHistory, setAiHistory] = useState([]);
 
-  const API = `http://localhost:3001${feature.apiPath}`;
+  const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001/api';
+  const API = `${API_BASE.replace(/\/api$/, '')}${feature.apiPath}`;
   const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 
   const fetchItems = useCallback(async () => {
@@ -43,7 +44,7 @@ function FeaturePage({ feature, fields, token }) {
   const fetchAIHistory = useCallback(async (itemId) => {
     if (!itemId) return setAiHistory([]);
     try {
-      const res = await fetch(`http://localhost:3001/api/ai-insights/${feature.key.replace(/-/g, '_')}/${itemId}?page=1&limit=5`, { headers });
+      const res = await fetch(`${API_BASE}/ai-insights/${feature.key.replace(/-/g, '_')}/${itemId}?page=1&limit=5`, { headers });
       const data = await res.json();
       if (data && Array.isArray(data.data)) setAiHistory(data.data);
     } catch (err) { /* silent */ }
