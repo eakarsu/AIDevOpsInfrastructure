@@ -10,6 +10,12 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD || 'postgres',
 });
 
+function requireDemoPassword() {
+  const password = process.env.DEMO_PASSWORD || process.env.SEED_DEMO_PASSWORD || process.env.DEMO_SEED_PASSWORD || '';
+  if (password.length < 12 || password.length > 1024) throw new Error('DEMO_PASSWORD must contain 12-1024 characters');
+  return password;
+}
+
 async function seed() {
   const client = await pool.connect();
   try {
@@ -248,7 +254,7 @@ async function seed() {
 
     // Insert default user
     const bcrypt = require('bcryptjs');
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    const hashedPassword = await bcrypt.hash(requireDemoPassword(), 10);
     await client.query(`INSERT INTO users (email, password, name) VALUES ('admin@devops.io', $1, 'DevOps Engineer')`, [hashedPassword]);
 
     // ===================== SEED DATA =====================
@@ -455,7 +461,7 @@ async function seed() {
 
     console.log('✅ Database seeded successfully with 15 items per feature!');
     console.log('📊 Tables: users, auto_scaling_policies, incident_responses, deployment_pipelines, monitoring_alerts, security_compliance, cost_optimization, container_orchestration, log_analysis, iac_configs, disaster_recovery');
-    console.log('👤 Default user: admin@devops.io / password123');
+    console.log('Demo login users provisioned from the local environment.');
   } catch (err) {
     console.error('❌ Seed error:', err.message);
     throw err;
