@@ -3,7 +3,14 @@ import React, { useEffect, useState } from 'react';
 export default function SloErrorBudgetBurn() {
   const [data, setData] = useState(null);
   useEffect(() => {
-    fetch('/api/slo-error-budget-burn').then((res) => res.json()).then(setData).catch(() => setData(null));
+    const apiBase = process.env.REACT_APP_API_BASE || 'http://localhost:3001/api';
+    fetch(`${apiBase}/slo-error-budget-burn`).then((res) => {
+      if (!res.ok) throw new Error(`SLO request failed (${res.status})`);
+      return res.json();
+    }).then((payload) => setData({
+      summary: payload?.summary && typeof payload.summary === 'object' ? payload.summary : {},
+      services: Array.isArray(payload?.services) ? payload.services : [],
+    })).catch(() => setData(null));
   }, []);
   return (
     <div className="page">

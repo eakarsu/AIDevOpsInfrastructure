@@ -7,8 +7,14 @@ function Login({ onLogin }) {
   const [loading, setLoading] = useState(false);
 
   const handleAutoFill = () => {
-    setEmail(process.env.REACT_APP_DEMO_EMAIL || '');
-    setPassword(process.env.REACT_APP_DEMO_PASSWORD || '');
+    const demoEmail = process.env.REACT_APP_DEMO_EMAIL;
+    const demoPassword = process.env.REACT_APP_DEMO_PASSWORD;
+    if (process.env.REACT_APP_ENABLE_DEMO_CREDENTIAL_AUTOFILL !== 'true' || !demoEmail || !demoPassword) {
+      setError('Demo credentials are not configured for this client. Enter your account credentials to sign in.');
+      return;
+    }
+    setEmail(demoEmail);
+    setPassword(demoPassword);
     setError('');
   };
 
@@ -58,8 +64,8 @@ function Login({ onLogin }) {
           </button>
         </form>
 
-        <button className="autofill-btn" onClick={handleAutoFill}>
-          Auto Fill Demo Credentials
+        <button type="button" className="autofill-btn" onClick={handleAutoFill}>
+          Fill demo credentials
         </button>
       </div>
     </div>

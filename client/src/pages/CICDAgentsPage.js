@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FormattedAIReport from '../components/FormattedAIReport';
 
 const API_URL = process.env.REACT_APP_API_BASE || 'http://localhost:3001/api';
 
@@ -28,6 +29,20 @@ export default function CICDAgentsPage({ token }) {
   const [errorOutput, setErrorOutput] = useState('');
   const [pipelineConfig, setPipelineConfig] = useState('');
   const [repoInfo, setRepoInfo] = useState('');
+
+  const fillExample = (variant) => {
+    const scenarios = [
+      { logs: 'checkout-api build failed after dependency update; test suite reports a module resolution error.', error: 'Cannot resolve package @acme/config in the integration test job.', config: { stages: ['install', 'test', 'build', 'deploy'], runtime: 'node', cache: 'npm', environment: 'staging' }, repo: { service: 'checkout-api', language: 'JavaScript', ci_tool: 'GitHub Actions', concern: 'dependency audit and least-privilege deployment' } },
+      { logs: 'payments-worker release job timed out while the integration tests waited for a database.', error: 'Integration test timeout after 180 seconds; database readiness probe failed.', config: { stages: ['lint', 'unit-test', 'integration-test', 'deploy'], runtime: 'node', cache: 'npm', environment: 'staging' }, repo: { service: 'payments-worker', language: 'JavaScript', ci_tool: 'GitHub Actions', concern: 'secret exposure and deployment approvals' } },
+      { logs: 'reporting-service image build passed, but the deployment validation job failed.', error: 'Health check returned 503 during rollout validation.', config: { stages: ['build', 'security-scan', 'test', 'canary'], runtime: 'node', cache: 'npm', environment: 'production' }, repo: { service: 'reporting-service', language: 'JavaScript', ci_tool: 'GitHub Actions', concern: 'image provenance and rollback permissions' } },
+    ];
+    const sample = scenarios[variant];
+    setBuildLogs(sample.logs);
+    setErrorOutput(sample.error);
+    setPipelineConfig(JSON.stringify(sample.config, null, 2));
+    setRepoInfo(JSON.stringify(sample.repo, null, 2));
+    setResult(null);
+  };
 
   const run = async (endpoint, body) => {
     setLoading(true); setResult(null);
@@ -66,6 +81,9 @@ export default function CICDAgentsPage({ token }) {
       </div>
 
       <div style={{ background: '#16213e', padding: 24, borderRadius: 12, marginBottom: 20, border: '1px solid #0f3460' }}>
+        <div aria-label="AI input examples" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+          {['Checkout build', 'Payments tests', 'Reporting rollout'].map((label, index) => <button key={label} type="button" onClick={() => fillExample(index)}>{`Fill ${label} example`}</button>)}
+        </div>
         {tab === 'analyze-failure' && <>
           <label style={{ color: '#a0a0b0', fontSize: 12 }}>Build Logs</label>
           <textarea style={inp} value={buildLogs} onChange={e => setBuildLogs(e.target.value)} placeholder="Paste build logs here..." />
@@ -99,7 +117,7 @@ export default function CICDAgentsPage({ token }) {
       {result && (
         <div style={{ background: '#16213e', padding: 24, borderRadius: 12, border: '1px solid #e94560' }}>
           <h3 style={{ color: '#e94560', margin: '0 0 16px' }}>✨ AI Result</h3>
-          {renderResult(result)}
+          <FormattedAIReport response={result} title="CI/CD analysis" />
         </div>
       )}
     </div>

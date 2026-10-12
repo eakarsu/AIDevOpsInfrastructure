@@ -1,3 +1,5 @@
+
+import FullAIExamples, { useFullAIExamples } from "../components/FullAIExamples.jsx";
 import React, { useState } from 'react';
 
 const API_URL = process.env.REACT_APP_API_BASE || 'http://localhost:3001/api';
@@ -22,6 +24,8 @@ const renderResult = (obj, depth = 0) => {
 };
 
 export default function AINewToolsPage({ token }) {
+  const fullAIExamples = useFullAIExamples();
+
   const [tab, setTab] = useState('recommend-scaling');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -160,7 +164,7 @@ export default function AINewToolsPage({ token }) {
   const inpSm = { ...inp, minHeight: 'auto' };
 
   return (
-    <div style={{ padding: 30 }}>
+    <div style={{ padding: 30 }} data-full-ai-workspace="AINewToolsPage"><FullAIExamples controller={fullAIExamples} disabled={Boolean(loading)} />
       <h1 style={{ fontSize: 24, color: '#e0e0e0', marginBottom: 8 }}>🤖 AI New Tools</h1>
       <p style={{ color: '#888', marginBottom: 24 }}>Stateless AI advisors for scaling and security posture</p>
 
@@ -195,21 +199,21 @@ export default function AINewToolsPage({ token }) {
               type="text"
               value={serviceName}
               onChange={(e) => setServiceName(e.target.value)}
-              placeholder="e.g., checkout-api"
+              placeholder="e.g., checkout-api" data-full-ai-field={fullAIExamples.bind({ current: serviceName, change: (e) => setServiceName(e.target.value), label: "serviceName", manual: false, json: false, sample: '' }, "p1-8066", undefined)}
             />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Metrics * (JSON or text)</label>
             <textarea
               style={inp}
               value={metrics}
               onChange={(e) => setMetrics(e.target.value)}
-              placeholder='{"cpu_pct_p95": 78, "memory_pct_p95": 62, "rps": 1200, "error_rate_pct": 0.4, "current_replicas": 6}'
+              placeholder='{"cpu_pct_p95": 78, "memory_pct_p95": 62, "rps": 1200, "error_rate_pct": 0.4, "current_replicas": 6}' data-full-ai-field={fullAIExamples.bind({ current: metrics, change: (e) => setMetrics(e.target.value), label: "metrics", manual: false, json: false, sample: '' }, "p1-8393", undefined)}
             />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Traffic Pattern (optional, JSON or text)</label>
             <textarea
               style={inp}
               value={trafficPattern}
               onChange={(e) => setTrafficPattern(e.target.value)}
-              placeholder='{"peak_hours": "09:00-11:00 UTC", "weekly_seasonality": true}'
+              placeholder='{"peak_hours": "09:00-11:00 UTC", "weekly_seasonality": true}' data-full-ai-field={fullAIExamples.bind({ current: trafficPattern, change: (e) => setTrafficPattern(e.target.value), label: "trafficPattern", manual: false, json: false, sample: '' }, "p1-8785", undefined)}
             />
             <button
               onClick={handleRecommendScaling}
@@ -233,9 +237,9 @@ export default function AINewToolsPage({ token }) {
         {tab === 'predict-failure' && (
           <>
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Component *</label>
-            <input style={inpSm} type="text" value={pfComponent} onChange={(e) => setPfComponent(e.target.value)} placeholder="e.g., db-primary-01" />
+            <input style={inpSm} type="text" value={pfComponent} onChange={(e) => setPfComponent(e.target.value)} placeholder="e.g., db-primary-01" data-full-ai-field={fullAIExamples.bind({ current: pfComponent, change: (e) => setPfComponent(e.target.value), label: "pfComponent", manual: false, json: false, sample: '' }, "p1-9794", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Telemetry (optional, JSON or text)</label>
-            <textarea style={inp} value={pfTelemetry} onChange={(e) => setPfTelemetry(e.target.value)} placeholder='{"disk_io_wait_pct": 22, "errors_last_1h": 12, "uptime_days": 412}' />
+            <textarea style={inp} value={pfTelemetry} onChange={(e) => setPfTelemetry(e.target.value)} placeholder='{"disk_io_wait_pct": 22, "errors_last_1h": 12, "uptime_days": 412}' data-full-ai-field={fullAIExamples.bind({ current: pfTelemetry, change: (e) => setPfTelemetry(e.target.value), label: "pfTelemetry", manual: false, json: false, sample: '' }, "p1-10050", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>History (optional, JSON or text)</label>
             <textarea style={inp} value={pfHistory} onChange={(e) => setPfHistory(e.target.value)} placeholder='{"prior_incidents": ["disk_full_2024_11_03"]}' />
             <button onClick={handlePredictFailure} disabled={loading || !pfComponent} style={{ padding: '12px 24px', background: loading ? '#555' : '#e94560', color: '#fff', border: 'none', borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 'bold', width: '100%' }}>
@@ -247,11 +251,11 @@ export default function AINewToolsPage({ token }) {
         {tab === 'incident-prediction' && (
           <>
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Recent Incidents (optional, JSON or text)</label>
-            <textarea style={inp} value={ipRecent} onChange={(e) => setIpRecent(e.target.value)} placeholder='[{"class":"db_failover","severity":"P2"}]' />
+            <textarea style={inp} value={ipRecent} onChange={(e) => setIpRecent(e.target.value)} placeholder='[{"class":"db_failover","severity":"P2"}]' data-full-ai-field={fullAIExamples.bind({ current: ipRecent, change: (e) => setIpRecent(e.target.value), label: "ipRecent", manual: false, json: false, sample: '' }, "p1-11076", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>System State (optional, JSON or text)</label>
-            <textarea style={inp} value={ipState} onChange={(e) => setIpState(e.target.value)} placeholder='{"open_alerts": 3, "deploys_last_24h": 7}' />
+            <textarea style={inp} value={ipState} onChange={(e) => setIpState(e.target.value)} placeholder='{"open_alerts": 3, "deploys_last_24h": 7}' data-full-ai-field={fullAIExamples.bind({ current: ipState, change: (e) => setIpState(e.target.value), label: "ipState", manual: false, json: false, sample: '' }, "p1-11340", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Time Window (hours)</label>
-            <input style={inpSm} type="number" value={ipWindow} onChange={(e) => setIpWindow(e.target.value)} />
+            <input style={inpSm} type="number" value={ipWindow} onChange={(e) => setIpWindow(e.target.value)} data-full-ai-field={fullAIExamples.bind({ current: ipWindow, change: (e) => setIpWindow(e.target.value), label: "ipWindow", manual: false, json: false, sample: '24' }, "p1-11584", undefined)} />
             <button onClick={handleIncidentPrediction} disabled={loading} style={{ padding: '12px 24px', background: loading ? '#555' : '#e94560', color: '#fff', border: 'none', borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 'bold', width: '100%' }}>
               {loading ? '⏳ Predicting...' : '🔮 Predict Incidents'}
             </button>
@@ -261,11 +265,11 @@ export default function AINewToolsPage({ token }) {
         {tab === 'cost-forecasting' && (
           <>
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Historical Spend * (JSON or text)</label>
-            <textarea style={inp} value={cfHistorical} onChange={(e) => setCfHistorical(e.target.value)} placeholder='[{"month":"2025-01","spend":12000},{"month":"2025-02","spend":13500}]' />
+            <textarea style={inp} value={cfHistorical} onChange={(e) => setCfHistorical(e.target.value)} placeholder='[{"month":"2025-01","spend":12000},{"month":"2025-02","spend":13500}]' data-full-ai-field={fullAIExamples.bind({ current: cfHistorical, change: (e) => setCfHistorical(e.target.value), label: "cfHistorical", manual: false, json: false, sample: '' }, "p1-12250", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Growth Factors (optional, JSON or text)</label>
-            <textarea style={inp} value={cfGrowth} onChange={(e) => setCfGrowth(e.target.value)} placeholder='{"new_product_launch":"Q3","headcount_growth_pct":15}' />
+            <textarea style={inp} value={cfGrowth} onChange={(e) => setCfGrowth(e.target.value)} placeholder='{"new_product_launch":"Q3","headcount_growth_pct":15}' data-full-ai-field={fullAIExamples.bind({ current: cfGrowth, change: (e) => setCfGrowth(e.target.value), label: "cfGrowth", manual: false, json: false, sample: '' }, "p1-12552", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Forecast Months</label>
-            <input style={inpSm} type="number" value={cfMonths} onChange={(e) => setCfMonths(e.target.value)} />
+            <input style={inpSm} type="number" value={cfMonths} onChange={(e) => setCfMonths(e.target.value)} data-full-ai-field={fullAIExamples.bind({ current: cfMonths, change: (e) => setCfMonths(e.target.value), label: "cfMonths", manual: false, json: false, sample: '6' }, "p1-12806", undefined)} />
             <button onClick={handleCostForecasting} disabled={loading || !cfHistorical} style={{ padding: '12px 24px', background: loading ? '#555' : '#e94560', color: '#fff', border: 'none', borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 'bold', width: '100%' }}>
               {loading ? '⏳ Forecasting...' : '💰 Forecast Cost'}
             </button>
@@ -275,11 +279,11 @@ export default function AINewToolsPage({ token }) {
         {tab === 'detect-anomalies' && (
           <>
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Metric Name *</label>
-            <input style={inpSm} type="text" value={daMetric} onChange={(e) => setDaMetric(e.target.value)} placeholder="e.g., requests_per_second" />
+            <input style={inpSm} type="text" value={daMetric} onChange={(e) => setDaMetric(e.target.value)} placeholder="e.g., requests_per_second" data-full-ai-field={fullAIExamples.bind({ current: daMetric, change: (e) => setDaMetric(e.target.value), label: "daMetric", manual: false, json: false, sample: '' }, "p1-13463", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Series * (JSON array or text)</label>
-            <textarea style={inp} value={daSeries} onChange={(e) => setDaSeries(e.target.value)} placeholder='[120, 130, 125, 800, 140, 135]' />
+            <textarea style={inp} value={daSeries} onChange={(e) => setDaSeries(e.target.value)} placeholder='[120, 130, 125, 800, 140, 135]' data-full-ai-field={fullAIExamples.bind({ current: daSeries, change: (e) => setDaSeries(e.target.value), label: "daSeries", manual: false, json: false, sample: '' }, "p1-13714", undefined)} />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Baseline (optional, JSON or text)</label>
-            <textarea style={inp} value={daBaseline} onChange={(e) => setDaBaseline(e.target.value)} placeholder='{"mean":130,"stddev":12}' />
+            <textarea style={inp} value={daBaseline} onChange={(e) => setDaBaseline(e.target.value)} placeholder='{"mean":130,"stddev":12}' data-full-ai-field={fullAIExamples.bind({ current: daBaseline, change: (e) => setDaBaseline(e.target.value), label: "daBaseline", manual: false, json: false, sample: '' }, "p1-13963", undefined)} />
             <button onClick={handleDetectAnomalies} disabled={loading || !daMetric || !daSeries} style={{ padding: '12px 24px', background: loading ? '#555' : '#e94560', color: '#fff', border: 'none', borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 'bold', width: '100%' }}>
               {loading ? '⏳ Analyzing...' : '📊 Detect Anomalies'}
             </button>
@@ -293,14 +297,14 @@ export default function AINewToolsPage({ token }) {
               style={inp}
               value={postureSummary}
               onChange={(e) => setPostureSummary(e.target.value)}
-              placeholder='{"open_findings": 12, "critical_count": 2, "compliance_score": 78, "iam_review_overdue_days": 45}'
+              placeholder='{"open_findings": 12, "critical_count": 2, "compliance_score": 78, "iam_review_overdue_days": 45}' data-full-ai-field={fullAIExamples.bind({ current: postureSummary, change: (e) => setPostureSummary(e.target.value), label: "postureSummary", manual: false, json: false, sample: '' }, "p1-14687", undefined)}
             />
             <label style={{ color: '#a0a0b0', fontSize: 12 }}>Asset Inventory (optional, JSON or text)</label>
             <textarea
               style={inp}
               value={assetInventory}
               onChange={(e) => setAssetInventory(e.target.value)}
-              placeholder='{"vms": 22, "kubernetes_clusters": 3, "databases": 5, "public_endpoints": 4}'
+              placeholder='{"vms": 22, "kubernetes_clusters": 3, "databases": 5, "public_endpoints": 4}' data-full-ai-field={fullAIExamples.bind({ current: assetInventory, change: (e) => setAssetInventory(e.target.value), label: "assetInventory", manual: false, json: false, sample: '' }, "p1-15090", undefined)}
             />
             <button
               onClick={handleSecurityAssessment}

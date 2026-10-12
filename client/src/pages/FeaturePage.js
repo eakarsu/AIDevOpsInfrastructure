@@ -1,5 +1,14 @@
+import FormattedAIReport from "../components/FormattedAIReport";
 import React, { useState, useEffect, useCallback } from 'react';
 import Pagination from '../components/Pagination';
+
+const resourceTypes = {
+  'auto-scaling': 'auto_scaling_policies', incidents: 'incident_responses',
+  deployments: 'deployment_pipelines', monitoring: 'monitoring_alerts',
+  security: 'security_compliance', 'cost-optimization': 'cost_optimization',
+  containers: 'container_orchestration', 'log-analysis': 'log_analysis',
+  iac: 'iac_configs', 'disaster-recovery': 'disaster_recovery',
+};
 
 function FeaturePage({ feature, fields, token }) {
   const [items, setItems] = useState([]);
@@ -16,6 +25,7 @@ function FeaturePage({ feature, fields, token }) {
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
   const [aiHistory, setAiHistory] = useState([]);
+  const [openHistoryId, setOpenHistoryId] = useState(null);
 
   const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:3001/api';
   const API = `${API_BASE.replace(/\/api$/, '')}${feature.apiPath}`;
@@ -44,7 +54,7 @@ function FeaturePage({ feature, fields, token }) {
   const fetchAIHistory = useCallback(async (itemId) => {
     if (!itemId) return setAiHistory([]);
     try {
-      const res = await fetch(`${API_BASE}/ai-insights/${feature.key.replace(/-/g, '_')}/${itemId}?page=1&limit=5`, { headers });
+      const res = await fetch(`${API_BASE}/ai-insights/${resourceTypes[feature.key]}/${itemId}?page=1&limit=5`, { headers });
       const data = await res.json();
       if (data && Array.isArray(data.data)) setAiHistory(data.data);
     } catch (err) { /* silent */ }
@@ -133,6 +143,31 @@ function FeaturePage({ feature, fields, token }) {
 
   const handleFormChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const fillExample = (variant) => {
+    const scenarios = [
+      { title: 'Checkout service capacity review', service: 'checkout-api', detail: 'Peak traffic increased during a regional promotion. Review observed metrics, identify likely constraints, and propose a safe follow-up.' },
+      { title: 'Deployment reliability review', service: 'payments-worker', detail: 'A recent deployment increased retry rates. Compare rollout evidence, rollback criteria, and customer impact before recommending changes.' },
+      { title: 'Monthly infrastructure review', service: 'reporting-service', detail: 'The operations team needs a prioritized review of cost, availability, and security findings with owners and validation steps.' },
+    ];
+    const scenario = scenarios[variant];
+    const next = { ...formData };
+    fields.forEach((field) => {
+      const key = field.name.toLowerCase();
+      if (/(^|_)(id|reference|file|upload|evidence|approval|approved)(_|$)/.test(key)) return;
+      if (field.type === 'select') {
+        const options = (field.options || []).filter(option => !/approved|authorized|verified/i.test(option));
+        next[field.name] = options[variant % options.length] ?? next[field.name];
+      }
+      else if (field.type === 'checkbox') next[field.name] = variant !== 1;
+      else if (field.type === 'number') next[field.name] = /percent|score|coverage|cpu|memory/.test(key) ? [72, 38, 85][variant] : /cost|savings|amount/.test(key) ? [2400, 650, 4200][variant] : [3, 2, 5][variant];
+      else if (/^title$|name$/.test(key)) next[field.name] = scenario.title;
+      else if (/service|component|resource|cluster/.test(key)) next[field.name] = scenario.service;
+      else next[field.name] = `${scenario.detail} This is illustrative input; verify observations and approvals before acting.`;
+    });
+    setFormData(next);
+    setAiOutput(null);
   };
 
   // Rich AI content formatter
@@ -315,14 +350,8 @@ function FeaturePage({ feature, fields, token }) {
                     {aiOutput.success === false && <span style={{ color: '#F85149', fontSize: 11 }}>{aiOutput.error}</span>}
                   </div>
                   <div className="ai-output-body">
-                    <div className="ai-output-content" dangerouslySetInnerHTML={{ __html: formatAiContent(aiOutput.result || aiOutput.error || 'No response') }} />
+                    <FormattedAIReport response={aiOutput.parsed && !aiOutput.parsed.raw_response ? aiOutput.parsed : (aiOutput.result ?? aiOutput.error ?? 'No response')} title="AI analysis" />
                   </div>
-                  {aiOutput.parsed && Object.keys(aiOutput.parsed).length > 0 && !aiOutput.parsed.raw_response && (
-                    <details style={{ marginTop: 8, padding: 8, background: '#0D1117', borderRadius: 4 }}>
-                      <summary style={{ cursor: 'pointer', fontSize: 11, color: '#58A6FF', fontWeight: 600 }}>Parsed JSON</summary>
-                      <pre style={{ margin: 0, padding: 8, color: '#C9D1D9', fontSize: 11, overflow: 'auto' }}>{JSON.stringify(aiOutput.parsed, null, 2)}</pre>
-                    </details>
-                  )}
                   {aiOutput.usage && (
                     <div className="ai-output-meta">
                       <span>prompt: {aiOutput.usage.prompt_tokens}</span>
@@ -340,6 +369,8 @@ function FeaturePage({ feature, fields, token }) {
                     <div key={h.id} style={{ padding: '6px 0', borderBottom: '1px solid #30363D', fontSize: 12 }}>
                       <div style={{ color: '#8B949E' }}>{new Date(h.created_at).toLocaleString()}</div>
                       <div style={{ color: '#C9D1D9', marginTop: 2 }}>{(h.prompt_summary || '').slice(0, 120)}</div>
+                      {h.response_text != null && <button type="button" className="btn-secondary" onClick={() => setOpenHistoryId(openHistoryId === h.id ? null : h.id)}>{openHistoryId === h.id ? 'Close report' : 'Open report'}</button>}
+                      {openHistoryId === h.id && <FormattedAIReport response={h.response_text} title="Saved AI analysis" />}
                     </div>
                   ))}
                 </div>
@@ -364,6 +395,10 @@ function FeaturePage({ feature, fields, token }) {
             </div>
             <form onSubmit={handleSave}>
               <div className="modal-body">
+                <div aria-label="AI input examples" style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                  {[0, 1, 2].map((variant) => <button key={variant} type="button" className="btn-secondary" onClick={() => fillExample(variant)}>Fill example {variant + 1}</button>)}
+                </div>
+                <p style={{ fontSize: 12, marginTop: -8 }}>Examples fill editable scenario fields and use available status choices. Select real records and files, and confirm approvals using the native controls.</p>
                 <div className="form-grid">
                   {fields.map(f => (
                     <div key={f.name} className={`form-group ${f.type === 'textarea' ? 'full-width' : ''}`}>
@@ -405,7 +440,7 @@ function FeaturePage({ feature, fields, token }) {
                       <span className="ai-output-model">{aiOutput.model || 'OpenRouter'} {aiOutput.mock ? '(Demo)' : ''}</span>
                     </div>
                     <div className="ai-output-body">
-                      <div className="ai-output-content" dangerouslySetInnerHTML={{ __html: formatAiContent(aiOutput.result || aiOutput.error || 'No response') }} />
+                      <FormattedAIReport response={aiOutput.parsed && !aiOutput.parsed.raw_response ? aiOutput.parsed : (aiOutput.result ?? aiOutput.error ?? 'No response')} title="AI analysis" />
                     </div>
                     {aiOutput.usage && (
                       <div className="ai-output-meta">
