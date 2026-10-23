@@ -60,6 +60,7 @@ app.use('/api/ai', require('./routes/scalingPredict'));
 app.use('/api/ai-backlog', require('./routes/aiBacklog'));
 app.use('/api/slo-error-budget-burn', require('./routes/sloErrorBudgetBurn'));
 app.use('/api/governed-changes', require('./routes/governedChanges'));
+app.use('/api/feature-pack', require('./routes/featurePack').createFeaturePackRouter({ queryFn:(t,p)=>require('./db').query(t,p), authenticate:require('./middleware/auth').authenticateToken, table:'incident_responses' }));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
